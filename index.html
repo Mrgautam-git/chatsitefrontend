@@ -60,16 +60,17 @@
         .container {
             border: 3px solid black;
             overflow-y: auto;
-            margin: 20px auto;
-            padding: 10px;
-            background-color: #f1f1f1;
+            margin: 5px auto;
+            padding: 13px;
+            background-color: #0c0303eb;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            max-width: 400px;
+            max-width: 665px;
             height: 70vh;
             border-radius: 10px;
             display: flex;
             flex-direction: column;
             gap: 10px;
+            align-items: center;
         }
       /* Hide the scrollbar */
 .container::-webkit-scrollbar {
@@ -88,70 +89,136 @@
 .container::-webkit-scrollbar-thumb:hover {
     background-color: rgba(0, 0, 0, 0.4); /* Slightly darker when hovering */
 }
+/* General message style */
+.message {
+    max-width: 58%;
+    display: flex;
+    font-size: 16px;
+    line-height: 1.6em;
+    font-family: 'Courier New', Courier, monospace;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    justify-content: center; /* Preserves spaces and line breaks */
+}
 
-        .message {
-            max-width: 60%;
-            padding: 10px;
-            border-radius: 10px;
-            font-size: 14px;
-            line-height: 1.5;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
+/* Right-aligned message (sender's message) */
+.right {
+    
+    color: #178637;
+    align-self: flex-end;
+    position: relative;
+    margin-inline: 2vmin;
+}
 
-        .right {
-            background-color: #4A90E2;
-            color: white;
-            align-self: flex-end;
-        }
+.right::before {
+    content: "<";
+    position: absolute;
+    left: -15px;
+    font-size: 24px;
+    color: #178637;
+}
 
-        .left {
-            background-color: #e6e6e6;
-            color: black;
-            align-self: flex-start;
-        }
+.right::after {
+    content: ">";
+    position: absolute;
+    right: -15px;
+    font-size: 24px;
+    color: #178637;
+}
 
-        #send-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 400px;
-            margin: auto;
-            padding: 10px;
-        }
+/* Left-aligned message (received message) */
+.left {
+    color: #178637;
+    align-self: baseline;
+    position: relative;
+    margin-inline: 2vmin;
+}
 
-        #messageInp {
-            flex-grow: 1;
-            padding: 10px;
-            border: 2px solid black;
-            border-radius: 5px;
-            font-size: 16px;
-            margin-right: 10px;
-        }
+.left::before {
+    content: "<";
+    position: absolute;
+    left: -15px;
+    font-size: 24px;
+    color: #178637;
+}
 
-        .btn {
-            cursor: pointer;
-            background-color: #4A90E2;
-            color: white;
-            border: 2px solid #4A90E2;
-            padding: 10px 15px;
-            border-radius: 5px;
-            font-size: 16px;
-            transition: 0.3s;
-        }
+.left::after {
+    content: ">";
+    position: absolute;
+    right: -15px;
+    font-size: 24px;
+    color: #178637;
+}
+/* Form container */
+#send-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    background-color: #1e1e1e;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+#welcome-message{
+    font-family: 'Courier New', Courier, monospace;
+}
 
-        .btn:hover {
-            background-color: white;
-            color: #4A90E2;
-        }
+/* Input field (message input) */
+#messageInp {
+    width: 47%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 2px solid #178637;
+    background-color: #333;
+    color: #178637;
+    font-size: 16px;
+    font-family: 'Courier New', Courier, monospace; /* Monospace font for hacking style */
+    outline: none;
+    transition: background-color 0.3s ease;
+}
 
+#messageInp:focus {
+    background-color: #1a1a1a;
+}
+
+/* Button */
+.btn {
+    padding: 10px 20px;
+    margin-left: 10px;
+    background-color: #178637;
+    color: white;
+    font-size: 16px;
+    font-family: 'Courier New', Courier, monospace;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn:hover {
+    background-color: #32b85b;
+    transform: scale(1.05);
+}
+
+.btn:active {
+    transform: scale(1);
+}
+
+
+       
         .server-message {
-            background-color: #f5f5f5;
-            color: #333;
+            color: #ff0606;
             font-style: italic;
-            text-align: center;
-            margin-top: 5px;
-            padding: 8px;
-            border-radius: 5px;
+            padding: 0px;
+            width: 109%;
+            line-height: 2vmin;
+            text-decoration: underline;
+        }
+        @media (max-width:420px) {
+            .container{
+                height: 75vh;
+            }
+            
         }
     </style>
 </head>
@@ -160,7 +227,7 @@
     <canvas id="matrixCanvas"></canvas>
     <div class="frontbox">
         <nav>
-            <div class="logbox"> <img src="chatlog.png" alt="Chat Icon"></div>
+            <div class="logbox"> <img src="WhatsApp Image 2024-11-28 at 23.47.13_740ece3e.jpg" alt="Chat Icon"></div>
             <h1 id="welcome-message">Welcome, [Your Name]</h1>
         </nav>
         <div class="container" id="message-container">
