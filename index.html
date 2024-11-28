@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Chat App</title>
+    <script src="https://chatsite-xzbs.onrender.com/socket.io/socket.io.js"></script>
+    <script src="js/client.js" defer></script>
+    <style>
+        :root {
+            --rain-speed: 50; /* Speed of the falling effect in milliseconds */
+            --font-size: 16px; /* Font size of the characters */
+        }
+
+        /* General Styling */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: black;
+            color: #333;
+            overflow: hidden;
+        }
+
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .frontbox {
+            position: relative;
+            z-index: 2; /* Ensures this is in front of the canvas */
+        }
+
+        nav {
+            background-color: #4A90E2;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        nav img {
+            width: 30px;
+            vertical-align: middle;
+        }
+
+        nav h1 {
+            display: inline-block;
+            margin: 0;
+            font-size: 20px;
+            vertical-align: middle;
+        }
+
+        .container {
+            border: 3px solid black;
+            overflow-y: auto;
+            margin: 20px auto;
+            padding: 10px;
+            background-color: #f1f1f1;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            height: 70vh;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+      /* Hide the scrollbar */
+.container::-webkit-scrollbar {
+    width: 0px; /* Make the scrollbar invisible */
+    height: 0px; /* If you're working with horizontal scroll, hide the horizontal scrollbar */
+}
+
+/* Style the scrollbar thumb (the draggable part) */
+.container::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2); /* A slim, subtle color for the thumb */
+    border-radius: 10px; /* Rounded corners for the thumb */
+    border: 2px solid rgba(0, 0, 0, 0.1); /* Light border for a clean look */
+}
+
+/* Optional: Add a hover effect for the thumb to make it more interactive */
+.container::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.4); /* Slightly darker when hovering */
+}
+
+        .message {
+            max-width: 60%;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 14px;
+            line-height: 1.5;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .right {
+            background-color: #4A90E2;
+            color: white;
+            align-self: flex-end;
+        }
+
+        .left {
+            background-color: #e6e6e6;
+            color: black;
+            align-self: flex-start;
+        }
+
+        #send-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 400px;
+            margin: auto;
+            padding: 10px;
+        }
+
+        #messageInp {
+            flex-grow: 1;
+            padding: 10px;
+            border: 2px solid black;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+
+        .btn {
+            cursor: pointer;
+            background-color: #4A90E2;
+            color: white;
+            border: 2px solid #4A90E2;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            background-color: white;
+            color: #4A90E2;
+        }
+
+        .server-message {
+            background-color: #f5f5f5;
+            color: #333;
+            font-style: italic;
+            text-align: center;
+            margin-top: 5px;
+            padding: 8px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="matrixCanvas"></canvas>
+    <div class="frontbox">
+        <nav>
+            <div class="logbox"> <img src="chatlog.png" alt="Chat Icon"></div>
+            <h1 id="welcome-message">Welcome, [Your Name]</h1>
+        </nav>
+        <div class="container" id="message-container">
+        </div>
+        <div class="send">
+            <form id="send-container">
+                <input type="text" name="messageInp" id="messageInp" placeholder="Type your message here..." required>
+                <button class="btn" type="submit">Send</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Set canvas dimensions
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Characters to use for the rain effect
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*';
+        const fontSize = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--font-size'));
+        const columns = Math.floor(canvas.width / fontSize);
+        const drops = Array(columns).fill(1); // Tracks the Y position of each column
+
+        // Draw the matrix rain effect
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; // Clear effect with slight trail
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#0F0'; // Green text
+            ctx.font = `${fontSize}px monospace`;
+
+            drops.forEach((y, index) => {
+                const text = characters[Math.floor(Math.random() * characters.length)];
+                const x = index * fontSize;
+
+                // Draw the character
+                ctx.fillText(text, x, y * fontSize);
+
+                // Reset the drop to the top randomly or move it down
+                if (y * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[index] = 0;
+                }
+
+                drops[index]++;
+            });
+        }
+
+        // Animate the matrix rain
+        setInterval(drawMatrix, parseInt(getComputedStyle(document.documentElement).getPropertyValue('--rain-speed')));
+
+        // Adjust canvas size on window resize
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            drops.length = Math.floor(canvas.width / fontSize); // Recalculate columns
+            drops.fill(1);
+        });
+    </script>
+</body>
+
+</html>
